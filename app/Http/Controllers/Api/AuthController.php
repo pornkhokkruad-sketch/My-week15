@@ -30,4 +30,31 @@ class AuthController extends Controller
             'token' => $token
         ], 201);
     }
+    // app/Http/Controllers/Api/AuthController.php
+public function login(Request $request)
+{
+    $fields = $request->validate([
+        'email' => 'required|string|email',
+        'password' => 'required|string'
+    ]);
+
+    $user = User::where('email', $fields['email'])->first();
+
+    // ตรวจสอบว่ามี User และ Password ตรงกันหรือไม่
+    if (!$user || !Hash::check($fields['password'], $user->password)) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
+        ], 401);
+    }
+
+    $token = $user->createToken('myapptoken')->plainTextToken;
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'เข้าสู่ระบบสำเร็จ',
+        'user' => $user,
+        'token' => $token
+    ], 200);
+}
 }
